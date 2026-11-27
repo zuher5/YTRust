@@ -59,3 +59,11 @@ Judul draft sekarang `YTRust <versi>`; nama file ZIP memakai `YTRust-`.
 - Langkah packaging dicek ulang terhadap berkas yang disalin; `pwsh` tidak ada
   di sandbox Linux ini, jadi skrip PowerShell-nya belum dieksekusi lokal.
 - Build & test Rust tidak terpengaruh perubahan ini (110 test tetap lulus).
+
+## Kebijakan ukuran
+
+Build penuh hanya dijalankan di GitHub Actions; artefak (ZIP, `dist/`,
+`target/`, `third_party/vulkan/`) tidak disimpan di mesin kerja. `target/` saja
+sekitar 12 GB, jadi setelah verifikasi lokal semuanya dihapus dan `.gitignore`
+sudah mengabaikan semuanya. Hasil build ada di artifact run
+(`Windows build` → `windows-x64`) atau di release `v0.8.0-ytrust`.
