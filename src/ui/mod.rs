@@ -421,26 +421,13 @@ pub fn copy_text_to_clipboard(text: String, cx: &mut App) {
     toast(cx, crate::i18n::t("Copied to clipboard"));
 }
 
-/// Brand colors of the Stream Tube logo.
+/// Brand colours used by the update dialog's gradient.
 pub const BRAND_PINK: u32 = 0xF0307E;
 pub const BRAND_VIOLET: u32 = 0x7A3CF5;
 
-/// The Stream Tube app logo.
-/// The logo, in the current accent colour.
-pub fn logo(size: Pixels) -> Img {
-    let accent = app_icon::icon_accent(crate::store::settings_snapshot().accent);
-    img(SharedString::from(format!("brand/logo-{accent:06x}.svg"))).size(size).flex_none()
-}
-
-/// "Stream Tube" wordmark next to the logo.
-pub fn wordmark(cx: &App) -> Div {
-    let p = pal(cx);
-    div()
-        .flex()
-        .items_baseline()
-        .gap(px(5.))
-        .text_lg()
-        .font_weight(FontWeight::BOLD)
-        .child(div().text_color(p.text).child("Stream"))
-        .child(div().text_color(p.accent).child("Tube"))
+/// The official YouTube icon (red rounded rect, white play triangle), used in the
+/// update/About hero. It is brand artwork, so it keeps YouTube red whatever the
+/// accent colour is.
+pub fn youtube_icon(size: Pixels) -> Img {
+    img(SharedString::from("brand/youtube.svg")).size(size).flex_none()
 }

@@ -1,13 +1,14 @@
-//! The app icon follows the accent colour: the logo inside the app, the window and
-//! taskbar icon, the desktop / Start menu shortcuts (Windows) and the menu icon (Linux).
+//! The app icon is the official YouTube icon: the window and taskbar icon, the
+//! desktop / Start menu shortcuts (Windows) and the menu icon (Linux).
 //!
-//! The icons are made by `tools/accent_icons.py` (assets/accent/) and, on Windows,
-//! embedded as icon resources 101.. (see assets/streamtube.rc).
+//! The rasters come from `tools/youtube_icon.py` (assets/youtube.png, and
+//! assets/streamtube.ico for Windows resource 1, see assets/streamtube.rc).
+//! The update/About hero shows the same icon (`ui::youtube_icon`).
 use gpui_kit::*;
 
-/// Accent colours with a ready-made icon, in resource order (101, 102, ...).
+/// Accent colours the update dialog's gradient can be built from.
 pub const ACCENTS: [u32; 7] = [0xFF0033, 0xF0307E, 0xAB47BC, 0x3EA6FF, 0x00BFA5, 0x2BA640, 0xFFA000];
-/// The brand colour: its icon is the original logo.
+/// The brand colour: its logo is the original gradient.
 pub const BRAND: u32 = 0xF0307E;
 
 /// The closest accent that has an icon.
@@ -70,7 +71,7 @@ fn shift(c: u32, dh: f64, sk: f64, lk: f64) -> u32 {
     from_hls((h + dh / 360.).rem_euclid(1.), (l * lk).clamp(0., 1.), (s * sk).clamp(0., 1.))
 }
 
-/// The logo's three gradient stops for an accent (same math as the icon generator).
+/// The three gradient stops for an accent, used by the update dialog's hero.
 pub fn accent_stops(accent: u32) -> [u32; 3] {
     if accent == BRAND {
         return [0xFF5A5F, 0xF0307E, 0x7A3CF5];
@@ -78,37 +79,27 @@ pub fn accent_stops(accent: u32) -> [u32; 3] {
     [shift(accent, -12., 1.0, 1.18), accent, shift(accent, 32., 0.95, 0.72)]
 }
 
-/// The logo SVG recoloured for `accent` (served as `brand/logo-<rrggbb>.svg`).
-pub fn logo_svg(accent: u32) -> String {
-    let base = include_str!("../../assets/logo.svg");
-    let [a, b, c] = accent_stops(accent);
-    base.replace("#FF5A5F", &format!("#{a:06X}")).replace("#F0307E", &format!("#{b:06X}")).replace("#7A3CF5", &format!("#{c:06X}"))
-}
-
-/// Applies the icon for the current accent everywhere outside the app's own UI.
+/// Applies the app icon everywhere outside the app's own UI.
+///
+/// The icon is the same in every accent colour (it is the YouTube icon), so the
+/// only thing that matters is which one is already installed.
 pub fn apply(cx: &mut App) {
-    let accent = icon_accent(crate::store::settings_snapshot().accent);
     #[cfg(windows)]
     {
         for w in cx.windows() {
-            let _ = w.update(cx, |_, window, _| set_window_icon(window, accent));
+            let _ = w.update(cx, |_, window, _| set_window_icon(window));
         }
-        update_shortcuts(accent);
+        update_shortcuts();
     }
     #[cfg(target_os = "linux")]
     {
         let _ = cx;
-        update_menu_icon(accent);
+        update_menu_icon();
     }
 }
 
 #[cfg(windows)]
-fn resource_id(accent: u32) -> u16 {
-    ACCENTS.iter().position(|a| *a == accent).map(|i| 101 + i as u16).unwrap_or(1)
-}
-
-#[cfg(windows)]
-pub fn set_window_icon(window: &Window, accent: u32) {
+pub fn set_window_icon(window: &Window) {
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
     #[link(name = "user32")]
     unsafe extern "system" {
@@ -126,7 +117,7 @@ pub fn set_window_icon(window: &Window, accent: u32) {
     const SM_CXSMICON: i32 = 49;
     let Ok(h) = HasWindowHandle::window_handle(window) else { return };
     let RawWindowHandle::Win32(w) = h.as_raw() else { return };
-    let id = resource_id(accent) as usize as *const u16; // MAKEINTRESOURCE
+    let id = 1usize as *const u16; // MAKEINTRESOURCE(1): the app icon resource
     unsafe {
         let inst = GetModuleHandleW(std::ptr::null());
         let big_size = GetSystemMetrics(SM_CXICON).max(32);
@@ -144,17 +135,17 @@ pub fn set_window_icon(window: &Window, accent: u32) {
 
 /// Points the app's shortcuts (desktop, Start menu, taskbar pin) at the matching icon.
 #[cfg(windows)]
-fn update_shortcuts(accent: u32) {
+fn update_shortcuts() {
     let Ok(exe) = std::env::current_exe() else { return };
     // an update reinstalls the shortcuts with the default icon, so the version and
     // the exe's timestamp are part of what "already done" means
     let built = std::fs::metadata(&exe).and_then(|m| m.modified()).ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map(|d| d.as_secs()).unwrap_or(0);
     let exe = exe.display().to_string();
-    let key = format!("{exe}|{accent:06x}|{}|{built}", env!("CARGO_PKG_VERSION"));
+    let key = format!("{exe}|{}|{built}", env!("CARGO_PKG_VERSION"));
     if crate::store::kv_get("shortcut_icon").as_deref() == Some(key.as_str()) {
         return;
     }
-    let id = resource_id(accent);
+    let id = 1;
     std::thread::spawn(move || {
         // .lnk files are COM objects; PowerShell's WScript.Shell edits them simply
         let script = format!(
@@ -186,18 +177,11 @@ foreach ($d in $dirs) {{
     });
 }
 
-/// The user's icon theme folder wins over the system one, so the menu icon can follow the accent.
+/// The app icon (assets/youtube.png) is written into the user's icon theme, so the
+/// launcher shows it regardless of where the binary was installed.
 #[cfg(target_os = "linux")]
-fn update_menu_icon(accent: u32) {
-    let png: &[u8] = match accent {
-        0xFF0033 => include_bytes!("../../assets/accent/ff0033.png"),
-        0xAB47BC => include_bytes!("../../assets/accent/ab47bc.png"),
-        0x3EA6FF => include_bytes!("../../assets/accent/3ea6ff.png"),
-        0x00BFA5 => include_bytes!("../../assets/accent/00bfa5.png"),
-        0x2BA640 => include_bytes!("../../assets/accent/2ba640.png"),
-        0xFFA000 => include_bytes!("../../assets/accent/ffa000.png"),
-        _ => include_bytes!("../../assets/accent/f0307e.png"),
-    };
+fn update_menu_icon() {
+    let png: &[u8] = include_bytes!("../../assets/youtube.png");
     let Some(base) = dirs::data_dir() else { return };
     let dir = base.join("icons/hicolor/256x256/apps");
     let path = dir.join("streamtube.png");

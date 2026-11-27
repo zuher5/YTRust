@@ -193,7 +193,7 @@ impl SettingsPage {
 fn after_change(id: &str, window: &mut Window, cx: &mut App) {
     if id == "app-language" {
         crate::i18n::apply_component_locale();
-        window.set_window_title(&format!("{} - Stream Tube", t("Settings")));
+        window.set_window_title(&format!("{} - YTRust", t("Settings")));
     } else {
         apply_theme(Some(window), cx);
         crate::player::controller::apply_settings(cx);
@@ -1250,7 +1250,7 @@ impl SettingsPage {
         let s = store::settings_snapshot();
         let mpv = crate::player::mpv::available();
         card(cx)
-            .child(row("Stream Tube", &tf!("Version {0}", env!("CARGO_PKG_VERSION")), div(), cx))
+            .child(row("YTRust", &tf!("Version {0}", env!("CARGO_PKG_VERSION")), div(), cx))
             .child(row("Video engine", if mpv { "libmpv" } else if cfg!(windows) { "libmpv-2.dll not found" } else { "libmpv not found (install the libmpv package)" }, div(), cx))
             .child(row("yt-dlp", self.ytdlp_version.as_deref().unwrap_or("not installed"), div(), cx))
             .child({

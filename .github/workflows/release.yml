@@ -1,6 +1,6 @@
 name: Release
 
-# Builds every download in public on GitHub's runners, then puts them on a draft
+# Builds the Windows ZIP in public on GitHub's runners, then puts it on a draft
 # release together with SHA256SUMS.txt and a signed build provenance attestation
 # for each file. Publishing the draft is left to a maintainer; once published,
 # immutable releases keep the files from being changed.
@@ -46,10 +46,6 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-  linux:
-    needs: check
-    uses: ./.github/workflows/linux.yml
-
   windows:
     needs: check
     uses: ./.github/workflows/windows.yml
@@ -57,7 +53,7 @@ jobs:
       package: true
 
   publish:
-    needs: [check, linux, windows]
+    needs: [check, windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write       # create the draft release and upload its files
@@ -99,7 +95,7 @@ jobs:
             gh release upload "$TAG" dist/* --clobber
           else
             gh release create "$TAG" dist/* --draft --verify-tag "${pre[@]}" \
-              --title "Stream Tube $VERSION" --generate-notes
+              --title "YTRust $VERSION" --generate-notes
           fi
 
           {

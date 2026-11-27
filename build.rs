@@ -4,7 +4,7 @@ fn main() {
     {
         println!("cargo:rerun-if-changed=assets/streamtube.rc");
         println!("cargo:rerun-if-changed=assets/streamtube.ico");
-        println!("cargo:rerun-if-changed=assets/accent");
+        println!("cargo:rerun-if-changed=assets/youtube.png");
         let _ = embed_resource::compile("assets/streamtube.rc", embed_resource::NONE);
     }
 }

@@ -1265,7 +1265,7 @@ impl AppView {
                             div()
                                 .text_xs()
                                 .text_color(p.text3)
-                                .child(t("Videos you watch in Stream Tube then show in your YouTube history, and your phone and TV resume them where you stopped. The window uses its own empty profile, which is deleted afterwards.")),
+                                .child(t("Videos you watch in YTRust then show in your YouTube history, and your phone and TV resume them where you stopped. The window uses its own empty profile, which is deleted afterwards.")),
                         ),
                 )
                 .child(
@@ -1490,7 +1490,7 @@ impl AppView {
             self.history.remove(0);
         }
         self.forward.clear();
-        window.set_window_title(&format!("{} - Stream Tube", self.route.title()));
+        window.set_window_title(&format!("{} - YTRust", self.route.title()));
         window.focus(&self.focus, cx);
         cx.notify();
     }
@@ -1592,7 +1592,7 @@ impl AppView {
         if cx.global::<UiState>().fullscreen && !matches!(self.route, Route::Watch { .. } | Route::Shorts(_)) {
             exit_fullscreen(window, cx);
         }
-        window.set_window_title(&format!("{} - Stream Tube", self.route.title()));
+        window.set_window_title(&format!("{} - YTRust", self.route.title()));
         window.focus(&self.focus, cx);
         cx.notify();
     }
@@ -1867,7 +1867,7 @@ impl AppView {
                     self.page = build_page(&self.route.clone(), window, cx);
                 }
             }
-            window.set_window_title(&format!("{} - Stream Tube", self.route.title()));
+            window.set_window_title(&format!("{} - YTRust", self.route.title()));
             cx.notify();
         }
     }
@@ -1881,7 +1881,7 @@ impl AppView {
             if cx.global::<UiState>().fullscreen && !matches!(self.route, Route::Watch { .. } | Route::Shorts(_)) {
                 toggle_fullscreen(window, cx);
             }
-            window.set_window_title(&format!("{} - Stream Tube", self.route.title()));
+            window.set_window_title(&format!("{} - YTRust", self.route.title()));
             cx.notify();
         }
     }
@@ -2581,19 +2581,7 @@ impl AppView {
                             .when(!can_back, |d| d.opacity(0.35))
                             .on_click(cx.listener(|this, _, window, cx| this.back(window, cx))),
                     )
-                    .child(icon_button("refresh", "rotate-cw", cx).on_click(cx.listener(|this, _, window, cx| this.refresh(window, cx))))
-                    .child(
-                        div()
-                            .id("logo")
-                            .flex()
-                            .items_center()
-                            .gap_1()
-                            .ml_2()
-                            .cursor_pointer()
-                            .on_click(cx.listener(|this, _, window, cx| this.go(Route::Home, window, cx)))
-                            .child(crate::ui::logo(px(28.)))
-                            .child(crate::ui::wordmark(cx)),
-                    ),
+                    .child(icon_button("refresh", "rotate-cw", cx).on_click(cx.listener(|this, _, window, cx| this.refresh(window, cx)))),
             )
             // Native caption hit testing must leave the controls clickable.
             .child(drag_gap("drag-l").flex_1().min_w(px(24.)))
@@ -3237,7 +3225,7 @@ impl AppView {
         }
         let has_installer = cfg!(windows) && rel.asset.is_some();
         let size = rel.asset.as_ref().map(|a| a.size).filter(|s| *s > 0).map(|s| format!("{:.0} MB", s as f64 / 1_048_576.0));
-        let version = rel.name.trim_start_matches("Stream Tube").trim().trim_start_matches('v').to_string();
+        let version = rel.name.trim_start_matches("YTRust").trim_start_matches("Stream Tube").trim().trim_start_matches('v').to_string();
         let accent = crate::ui::app_icon::icon_accent(store::settings_snapshot().accent);
         let [c0, _, c2] = crate::ui::app_icon::accent_stops(accent);
         let mut meta = vec![tf!("You have {0}", crate::updater::current_version())];
@@ -3277,7 +3265,7 @@ impl AppView {
                             |d, t| d.opacity(0.25 + 0.55 * t),
                         ),
                     )
-                    .child(crate::ui::logo(px(64.))),
+                    .child(crate::ui::youtube_icon(px(72.))),
             )
             .child(
                 div()
@@ -3295,7 +3283,7 @@ impl AppView {
                     .child(icon("sparkles").size_3p5().text_color(white()))
                     .child(t("New version")),
             )
-            .child(div().text_3xl().font_weight(FontWeight::BOLD).text_color(white()).child(format!("Stream Tube {version}")))
+            .child(div().text_3xl().font_weight(FontWeight::BOLD).text_color(white()).child(format!("YTRust {version}")))
             .child(div().text_sm().text_color(hsla(0., 0., 1., 0.85)).child(meta.join(", ")));
 
         let mut body = div().flex().flex_col().gap_4().p_6();
@@ -3353,7 +3341,7 @@ impl AppView {
                                 ),
                         ),
                     )
-                    .child(div().text_xs().text_color(p.text2).child(t("Stream Tube restarts by itself when it's done."))),
+                    .child(div().text_xs().text_color(p.text2).child(t("YTRust restarts by itself when it's done."))),
             );
             return div().flex().flex_col().child(hero).child(body).into_any_element();
         }

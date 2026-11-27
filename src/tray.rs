@@ -35,7 +35,7 @@ fn add_icon(window: HWND) -> bool {
     let mut icon = data(window);
     icon.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
     icon.uCallbackMessage = CALLBACK;
-    for (dest, source) in icon.szTip.iter_mut().zip("Stream Tube".encode_utf16()) {
+    for (dest, source) in icon.szTip.iter_mut().zip("YTRust".encode_utf16()) {
         *dest = source;
     }
     // SAFETY: Both the shared icon resource and the main HWND belong to this process.

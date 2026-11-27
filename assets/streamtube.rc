@@ -1,9 +1,1 @@
 1 ICON "streamtube.ico"
-// the icon in each accent colour (src/ui/app_icon.rs ACCENTS order)
-101 ICON "accent/ff0033.ico"
-102 ICON "accent/f0307e.ico"
-103 ICON "accent/ab47bc.ico"
-104 ICON "accent/3ea6ff.ico"
-105 ICON "accent/00bfa5.ico"
-106 ICON "accent/2ba640.ico"
-107 ICON "accent/ffa000.ico"

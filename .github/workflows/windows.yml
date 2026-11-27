@@ -3,12 +3,12 @@ name: Windows build
 on:
   push:
     branches: [main]
-    paths: ["src/**", "Cargo.toml", "Cargo.lock", "build.rs", "assets/**", "installer/**", ".github/workflows/windows.yml"]
+    paths: ["src/**", "Cargo.toml", "Cargo.lock", "build.rs", "assets/**", ".github/workflows/windows.yml"]
   pull_request:
   workflow_dispatch:
     inputs:
       package:
-        description: "Also build the installer and the zip"
+        description: "Also build the portable ZIP"
         type: boolean
         default: false
   # release.yml builds the release packages with this
@@ -93,16 +93,9 @@ jobs:
           $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"' | Select-Object -First 1).Matches.Groups[1].Value
           New-Item -ItemType Directory -Force dist | Out-Null
 
-          # installer
-          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-          if (-not (Test-Path $iscc)) {
-            choco install innosetup -y --no-progress | Out-Null
-          }
-          & $iscc /Q "/DAppVersion=$version" installer\streamtube.iss
-          if ($LASTEXITCODE -ne 0) { throw "ISCC failed" }
-
-          # zip: the app and libmpv, to run without installing
-          $name = "StreamTube-$version-windows-x64"
+          # zip only: the app and libmpv, to run without installing. The Windows
+          # installer and the other platforms are not built in this fork.
+          $name = "YTRust-$version-windows-x64"
           New-Item -ItemType Directory -Force "dist/$name" | Out-Null
           Copy-Item target/release/streamtube.exe, third_party/mpv/libmpv-2.dll, README.md "dist/$name/"
           New-Item -ItemType File -Path "dist/$name/streamtube.portable" | Out-Null
@@ -117,7 +110,5 @@ jobs:
         if: inputs.package
         with:
           name: windows-x64
-          path: |
-            dist/*-setup.exe
-            dist/*.zip
+          path: dist/*.zip
           if-no-files-found: error
