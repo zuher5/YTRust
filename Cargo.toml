@@ -1,6 +1,6 @@
 [package]
 name = "streamtube"
-version = "0.7.6-alpha"
+version = "0.8.0-ytrust"
 edition = "2024"
 description = "A YouTube desktop client in Rust + GPUI with SponsorBlock, DeArrow, RYD, local subscriptions & more"
 license = "MIT"
